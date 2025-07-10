@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend", "Backend\Backend.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Share", "Share\Share.csproj", "{DEEBF84F-FFB6-4497-AB35-960DDBC5F069}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Frontend", "Frontend\Frontend.csproj", "{050ABE3D-EBB4-4A58-B958-82330ED6B7BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Frontend", "Frontend\Frontend.csproj", "{050ABE3D-EBB4-4A58-B958-82330ED6B7BC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DEEBF84F-FFB6-4497-AB35-960DDBC5F069} = {DEEBF84F-FFB6-4497-AB35-960DDBC5F069}
 	EndProjectSection

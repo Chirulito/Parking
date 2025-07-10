@@ -1,0 +1,118 @@
+﻿@page "/"
+@layout Layout.Annex.MainLayout
+@rendermode InteractiveServer
+
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject HttpClient Http
+
+<PageTitle>Login</PageTitle>
+
+<div class="main-container">
+    <div class="logo-container">
+        <img src="Images/Logo.svg" alt="Logo" />
+    </div>
+    <div class="login-container">
+        <div class="information-container">
+            <h1>Login</h1>
+        </div>
+
+        <div class="input-container">
+            <label for="email">Email</label>
+            <input id="email" type="text" maxlength="45" @bind="email" />
+        </div>
+
+        <div class="input-container">
+            <label for="password">Password</label>
+            <input id="password" type="password" maxlength="45" @bind="password" />
+        </div>
+
+        <button class="login-button" @onclick="Auth">
+            <span class="text">Continue</span>
+            <span class="arrow">→</span>
+        </button>
+
+        <button class="signup-button">Create an account</button>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message" style="color:red; margin-top:10px;">
+                @errorMessage
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string email;
+    private string password;
+    private string errorMessage;
+
+    private bool showRolesPopup = false;
+    private string rolesMessage = "";
+
+    private async Task Auth()
+    {
+        errorMessage = "";
+        showRolesPopup = false;
+
+        var loginData = new
+        {
+            email = email,
+            Password = password
+        };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://localhost:7141/api/Credential/Login", loginData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                var roles = result?.Roles ?? new List<string>();
+                AuthService.SetRoles(roles);
+
+                // Mensaje simple para el popup
+                rolesMessage = "Acceso exitoso. Redirigiendo...";
+                showRolesPopup = true;
+
+                // Espera 1.5 segundos para mostrar el popup
+                await Task.Delay(1500);
+                Console.WriteLine("Roles obtenidos: " + string.Join(", ", roles));
+
+                // Redirigir según rol
+                if (roles.Contains("System"))
+                    Navigation.NavigateTo("/Support");
+
+                else if (roles.Contains("Security"))
+                    Navigation.NavigateTo("/Security");
+
+                else if (roles.Contains("Staff"))
+                    Navigation.NavigateTo("/Staff");
+
+                else if (roles.Contains("Student"))
+                    Navigation.NavigateTo("/Student");
+                else
+                    Navigation.NavigateTo("/access-denied");
+            }
+            else
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private void ClosePopup()
+    {
+        showRolesPopup = false;
+    }
+
+    private class LoginResponse
+    {
+        public List<string> Roles { get; set; } = new();
+    }
+}

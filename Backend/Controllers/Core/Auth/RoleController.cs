@@ -1,12 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Context;
-using Share.EntityModels.Auth;
-using Microsoft.AspNetCore.Authorization;
+using Share.Models;
 
-namespace Backend.Controllers.Core
+namespace Backend.Controllers.Core.Auth
 {
-    [Authorize(Roles = "Administrator")]
     [Route("api/[controller]")]
     [ApiController]
     public class RoleController : ControllerBase

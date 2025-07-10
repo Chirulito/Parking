@@ -1,0 +1,123 @@
+﻿/* Plain Markups ------------------------------------ */
+input {
+	height: 2.5rem;
+	margin-top: 0.3rem;
+	background-color: #e7e7e7;
+	border-color: #636363;
+	border-width: 0.1rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+	border: none;
+	border-bottom: 0.1rem solid var(--secondary-color);
+	box-sizing: border-box;
+}
+
+h1 {
+	margin: 0rem;
+	padding-bottom: 1rem;
+	color: var(--primary-color);
+}
+
+/* Containers --------------------------------------- */
+.main-container {
+	display: flex;
+	height: 30rem;
+}
+
+.logo-container {
+	background-color: var(--secondary-color);
+	height: 30rem;
+	width: 5rem;
+}
+
+	.logo-container img {
+		height: 100%;
+		width: 100%;
+		object-fit: cover;
+	}
+
+.login-container {
+	height: 30rem;
+	width: 25rem;
+	background-color: #f5f5f5;
+	box-sizing: border-box;
+	padding-right: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border-bottom-right-radius: 5%;
+	border-top-right-radius: 5%;
+}
+
+.information-container {
+	width: 20rem;
+	display: flex;
+	flex-direction: column;
+	border-bottom: 0.1rem solid var(--secondary-color);
+}
+
+.input-container {
+	width: 20rem;
+	margin-top: 1rem;
+	display: flex;
+	flex-direction: column;
+}
+
+
+/* LogIn button ------------------------------------- */
+.login-button {
+	height: 2.5rem;
+	width: 20rem;
+	margin-top: 0.5rem;
+	background-color: var(--primary-color);
+	border: none;
+	color: #f5f5f5;
+	text-align: right;
+	padding-left: 1rem;
+	padding-right: 1rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+	.login-button .text {
+		text-align: left;
+	}
+
+	.login-button .arrow {
+		text-align: right;
+		font-size: 1.1rem;
+	}
+
+/* SignUp button ------------------------------------ */
+.signup-button {
+	height: 2.5rem;
+	width: 20rem;
+	color: #3f2a55;
+	margin-top: 2rem;
+	border: 0.1rem solid var(--primary-color);
+}
+
+/* Events ------------------------------------------- */
+.login-button:hover {
+	background-color: #5e3b82;
+	cursor: pointer;
+}
+
+.signup-button:hover {
+	background-color: #5e3b82;
+	color: #ffffff;
+	cursor: pointer;
+	border-color: #5e3b82;
+}
+
+input:focus {
+	outline: none;
+	border: 0.2rem solid #3f2a55;
+}
+
+input:-webkit-autofill {
+	background-color: #5e3b82 !important;
+	transition: background-color 9999s ease-in-out 0s;
+}

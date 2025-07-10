@@ -1,0 +1,19 @@
+﻿.login-layout-root {
+    font-family: var(--font);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--primary-color);
+}
+
+.login-layout-root header,.login-layout-root footer {
+    background-color: var(--background-color);
+    padding-left: 1rem;
+}
+
+.login-layout-root main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

@@ -5,4 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="EntityModels\**" />
+    <EmbeddedResource Remove="EntityModels\**" />
+    <None Remove="EntityModels\**" />
+  </ItemGroup>
 </Project>

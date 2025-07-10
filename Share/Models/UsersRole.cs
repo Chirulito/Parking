@@ -1,6 +1,9 @@
-﻿namespace Share.EntityModels.Auth;
+﻿using System;
+using System.Collections.Generic;
 
-public partial class UserRole
+namespace Share.Models;
+
+public partial class UsersRole
 {
     public int IdUserRole { get; set; }
 

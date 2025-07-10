@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Share.EntityModels.Parking;
 
-namespace Share.EntityModels.Auth;
+namespace Share.Models;
 
 public partial class User
 {

@@ -1,55 +1,58 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Context;
-using Share.EntityModels.Auth;
-using Microsoft.AspNetCore.Authorization;
+using Share.Models;
 
-namespace Backend.Controllers.Core
+namespace Backend.Controllers.Core.Auth
 {
-    [Authorize(Roles = "Administrator")]
     [Route("api/[controller]")]
     [ApiController]
-    public class UserRoleController : ControllerBase
+    public class UsersRoleController : ControllerBase
     {
         private readonly DatabaseContext _context;
 
-        public UserRoleController(DatabaseContext context)
+        public UsersRoleController(DatabaseContext context)
         {
             _context = context;
         }
 
-        // GET: api/UserRole
+        // GET: api/UsersRole
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserRole>>> GetUsersRoles()
+        public async Task<ActionResult<IEnumerable<UsersRole>>> GetUsersRoles()
         {
             return await _context.UsersRoles.ToListAsync();
         }
 
-        // GET: api/UserRole/5
+        // GET: api/UsersRole/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserRole>> GetUserRole(int id)
+        public async Task<ActionResult<UsersRole>> GetUsersRole(int id)
         {
-            var userRole = await _context.UsersRoles.FindAsync(id);
+            var usersRole = await _context.UsersRoles.FindAsync(id);
 
-            if (userRole == null)
+            if (usersRole == null)
             {
                 return NotFound();
             }
 
-            return userRole;
+            return usersRole;
         }
 
-        // PUT: api/UserRole/5
+        // PUT: api/UsersRole/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUserRole(int id, UserRole userRole)
+        public async Task<IActionResult> PutUsersRole(int id, UsersRole usersRole)
         {
-            if (id != userRole.IdUserRole)
+            if (id != usersRole.IdUserRole)
             {
                 return BadRequest();
             }
 
-            _context.Entry(userRole).State = EntityState.Modified;
+            _context.Entry(usersRole).State = EntityState.Modified;
 
             try
             {
@@ -57,7 +60,7 @@ namespace Backend.Controllers.Core
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserRoleExists(id))
+                if (!UsersRoleExists(id))
                 {
                     return NotFound();
                 }
@@ -70,34 +73,34 @@ namespace Backend.Controllers.Core
             return NoContent();
         }
 
-        // POST: api/UserRole
+        // POST: api/UsersRole
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<UserRole>> PostUserRole(UserRole userRole)
+        public async Task<ActionResult<UsersRole>> PostUsersRole(UsersRole usersRole)
         {
-            _context.UsersRoles.Add(userRole);
+            _context.UsersRoles.Add(usersRole);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUserRole", new { id = userRole.IdUserRole }, userRole);
+            return CreatedAtAction("GetUsersRole", new { id = usersRole.IdUserRole }, usersRole);
         }
 
-        // DELETE: api/UserRole/5
+        // DELETE: api/UsersRole/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserRole(int id)
+        public async Task<IActionResult> DeleteUsersRole(int id)
         {
-            var userRole = await _context.UsersRoles.FindAsync(id);
-            if (userRole == null)
+            var usersRole = await _context.UsersRoles.FindAsync(id);
+            if (usersRole == null)
             {
                 return NotFound();
             }
 
-            _context.UsersRoles.Remove(userRole);
+            _context.UsersRoles.Remove(usersRole);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool UserRoleExists(int id)
+        private bool UsersRoleExists(int id)
         {
             return _context.UsersRoles.Any(e => e.IdUserRole == id);
         }

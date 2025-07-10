@@ -1,55 +1,58 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Context;
-using Share.EntityModels.Auth;
-using Microsoft.AspNetCore.Authorization;
+using Share.Models;
 
-namespace Backend.Controllers.Core
+namespace Backend.Controllers.Core.Auth
 {
-    [Authorize(Roles = "Administrator")]
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class LogController : ControllerBase
     {
         private readonly DatabaseContext _context;
 
-        public UserController(DatabaseContext context)
+        public LogController(DatabaseContext context)
         {
             _context = context;
         }
 
-        // GET: api/User
+        // GET: api/Log
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<Log>>> GetLogs()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Logs.ToListAsync();
         }
 
-        // GET: api/User/5
+        // GET: api/Log/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<Log>> GetLog(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var log = await _context.Logs.FindAsync(id);
 
-            if (user == null)
+            if (log == null)
             {
                 return NotFound();
             }
 
-            return user;
+            return log;
         }
 
-        // PUT: api/User/5
+        // PUT: api/Log/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutLog(int id, Log log)
         {
-            if (id != user.IdUser)
+            if (id != log.IdLog)
             {
                 return BadRequest();
             }
 
-            _context.Entry(user).State = EntityState.Modified;
+            _context.Entry(log).State = EntityState.Modified;
 
             try
             {
@@ -57,7 +60,7 @@ namespace Backend.Controllers.Core
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(id))
+                if (!LogExists(id))
                 {
                     return NotFound();
                 }
@@ -70,36 +73,36 @@ namespace Backend.Controllers.Core
             return NoContent();
         }
 
-        // POST: api/User
+        // POST: api/Log
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<Log>> PostLog(Log log)
         {
-            _context.Users.Add(user);
+            _context.Logs.Add(log);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.IdUser }, user);
+            return CreatedAtAction("GetLog", new { id = log.IdLog }, log);
         }
 
-        // DELETE: api/User/5
+        // DELETE: api/Log/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteLog(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            var log = await _context.Logs.FindAsync(id);
+            if (log == null)
             {
                 return NotFound();
             }
 
-            _context.Users.Remove(user);
+            _context.Logs.Remove(log);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool UserExists(int id)
+        private bool LogExists(int id)
         {
-            return _context.Users.Any(e => e.IdUser == id);
+            return _context.Logs.Any(e => e.IdLog == id);
         }
     }
 }

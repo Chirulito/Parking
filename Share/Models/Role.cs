@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Share.EntityModels.Auth;
+namespace Share.Models;
 
 public partial class Role
 {
