@@ -33,28 +33,23 @@
         </button>
 
         <button class="signup-button">Create an account</button>
-
-        @if (!string.IsNullOrEmpty(errorMessage))
-        {
-            <div class="error-message" style="color:red; margin-top:10px;">
-                @errorMessage
-            </div>
-        }
     </div>
 </div>
 
 @code {
     private string email;
     private string password;
-    private string errorMessage;
 
-    private bool showRolesPopup = false;
-    private string rolesMessage = "";
 
     private async Task Auth()
     {
-        errorMessage = "";
-        showRolesPopup = false;
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            Console.WriteLine("Email and password cannot be empty.");
+            email = string.Empty;
+            password = string.Empty;
+            return;
+        }
 
         var loginData = new
         {
@@ -72,15 +67,10 @@
                 var roles = result?.Roles ?? new List<string>();
                 AuthService.SetRoles(roles);
 
-                // Mensaje simple para el popup
-                rolesMessage = "Acceso exitoso. Redirigiendo...";
-                showRolesPopup = true;
 
-                // Espera 1.5 segundos para mostrar el popup
                 await Task.Delay(1500);
                 Console.WriteLine("Roles obtenidos: " + string.Join(", ", roles));
 
-                // Redirigir según rol
                 if (roles.Contains("System"))
                     Navigation.NavigateTo("/Support");
 
@@ -97,18 +87,16 @@
             }
             else
             {
-                errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Invalid.");
+                email = string.Empty;
+                password = string.Empty;
+                return;
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            Console.WriteLine($"Error: {ex.Message}");
         }
-    }
-
-    private void ClosePopup()
-    {
-        showRolesPopup = false;
     }
 
     private class LoginResponse
