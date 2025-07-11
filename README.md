@@ -174,10 +174,10 @@ BEGIN
 END
 
 
-INSERT INTO Parking.Occupancy (id_spot, id_vehicle)
+INSERT INTO Parking.Occupancy (id_spot, id_vehicle, license_plate)
 VALUES (1, 1, 'AAA111');
 
-INSERT INTO Parking.Occupancy (id_spot, id_vehicle)
+INSERT INTO Parking.Occupancy (id_spot, id_vehicle, license_plate)
 VALUES (11, 2, 'BBB111');
 ```
 
