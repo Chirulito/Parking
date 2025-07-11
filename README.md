@@ -41,6 +41,7 @@ CREATE TABLE Auth.Logs (
     license_plate VARCHAR(20) NOT NULL,
     action VARCHAR(50) NOT NULL 
         CHECK (action IN ('entry', 'egress', 'denied', 'attempt')),
+    description text,
     timestamp DATETIME DEFAULT GETDATE()
 );
 
@@ -147,7 +148,7 @@ INSERT INTO Parking.Vehicles (id_user, license_plate, brand, model, color, accom
 -- Logs
 INSERT INTO Auth.Logs (license_plate, action)
 VALUES 
-    ('CCC333', 'attempt');
+    ('CCC333', 'attempt', 'Example');
 
 -- Insert Parking Spots
 DECLARE @i INT = 1;
