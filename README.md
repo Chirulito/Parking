@@ -83,7 +83,8 @@ CREATE TABLE Parking.Vehicles (
 CREATE TABLE Parking.Occupancy (
     id_occupancy INT IDENTITY(1,1) PRIMARY KEY,
     id_spot INT NOT NULL,
-    id_vehicle INT NOT NULL,
+    id_vehicle INT NULL,
+    license_plate VARCHAR(20) NOT NULL,
     timestamp DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (id_spot) REFERENCES Parking.Spots(id_spot),
     FOREIGN KEY (id_vehicle) REFERENCES Parking.Vehicles(id_vehicle)
@@ -174,10 +175,10 @@ END
 
 
 INSERT INTO Parking.Occupancy (id_spot, id_vehicle)
-VALUES (1, 1);
+VALUES (1, 1, 'AAA111');
 
 INSERT INTO Parking.Occupancy (id_spot, id_vehicle)
-VALUES (11, 2);
+VALUES (11, 2, 'BBB111');
 ```
 
 DROPS 
