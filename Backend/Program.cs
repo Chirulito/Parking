@@ -26,7 +26,12 @@ try
             builder.Configuration.GetConnectionString("Database-Esteban")
         )
     );
-Console.WriteLine("\nDatabase connection established!\n");
+    builder.Services.AddDbContext<DatabaseContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("Database-Jus")
+        )
+    );
+    Console.WriteLine("\nDatabase connection established!\n");
 }
 catch (Exception)
 {
