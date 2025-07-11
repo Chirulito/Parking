@@ -176,11 +176,11 @@ BEGIN
 END
 
 
-INSERT INTO Parking.Occupancy (id_spot, id_vehicle, license_plate, type, accommodation)
-VALUES (1, 1, 'AAA111', 'car', 0);
+INSERT INTO Parking.Occupancy (id_spot, license_plate, type, accommodation)
+VALUES (1, 'AAA111', 'car', 0);
 
-INSERT INTO Parking.Occupancy (id_spot, id_vehicle, license_plate, type, accommodation)
-VALUES (11, 2, 'BBB111', 'motorcycle', 0);
+INSERT INTO Parking.Occupancy (id_spot, license_plate, type, accommodation)
+VALUES (11, 'BBB111', 'motorcycle', 0);
 ```
 
 DROPS 
