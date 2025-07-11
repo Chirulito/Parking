@@ -146,7 +146,7 @@ INSERT INTO Parking.Vehicles (id_user, license_plate, brand, model, color, accom
     (6, 'BBB222', 'Yamaha', 'R15', 'Negro', 0, 'motorcycle');
 
 -- Logs
-INSERT INTO Auth.Logs (license_plate, action)
+INSERT INTO Auth.Logs (license_plate, action, description)
 VALUES 
     ('CCC333', 'attempt', 'Example');
 
