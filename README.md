@@ -62,7 +62,7 @@ CREATE TABLE Parking.Spots (
     id_building INT NOT NULL,
     code VARCHAR(10) NOT NULL UNIQUE,
     type VARCHAR(20) 
-        CHECK (type IN ('regular', 'accommodation', 'motorcycle')),
+        CHECK (type IN ('car', 'accommodation', 'motorcycle')),
     FOREIGN KEY (id_building) REFERENCES Parking.Building(id_building)
 );
 
@@ -152,7 +152,7 @@ DECLARE @i INT = 1;
 WHILE @i <= 10
 BEGIN
     INSERT INTO Parking.Spots (id_building, code, type)
-    VALUES (1, CONCAT('A', @i), 'regular');
+    VALUES (1, CONCAT('A', @i), 'car');
     SET @i += 1;
 END
 
