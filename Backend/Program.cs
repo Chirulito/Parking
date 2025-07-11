@@ -21,21 +21,22 @@ builder.Services.AddSwaggerGen();
 // Adds DatabaseContext to the ASP.NET web container by sending options to the constructor.
 try
 {
+    string? connectionString = builder.Configuration.GetConnectionString("Database");
+
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("Missing connection string for 'Database'. Check appsettings.json.");
+    }
+
     builder.Services.AddDbContext<DatabaseContext>(options =>
-        options.UseSqlServer(
-            builder.Configuration.GetConnectionString("Database-Esteban")
-        )
+        options.UseSqlServer(connectionString)
     );
-    builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("Database-Jus")
-        )
-    );
+
     Console.WriteLine("\nDatabase connection established!\n");
 }
-catch (Exception)
+catch (Exception ex)
 {
-    Console.WriteLine("\nDatabase connection failed...\n");
+    Console.WriteLine($"\nDatabase connection failed: {ex.Message}\n");
 }
 
 
