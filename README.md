@@ -147,7 +147,6 @@ INSERT INTO Parking.Vehicles (id_user, license_plate, brand, model, color, accom
 -- Logs
 INSERT INTO Auth.Logs (license_plate, action)
 VALUES 
-    ('CCC333', 'entry'),
     ('CCC333', 'attempt');
 
 -- Insert Parking Spots
