@@ -41,6 +41,7 @@ CREATE TABLE Auth.Logs (
     license_plate VARCHAR(20) NOT NULL,
     action VARCHAR(50) NOT NULL 
         CHECK (action IN ('entry', 'egress', 'denied', 'attempt')),
+    description text,
     timestamp DATETIME DEFAULT GETDATE()
 );
 
@@ -62,7 +63,7 @@ CREATE TABLE Parking.Spots (
     id_building INT NOT NULL,
     code VARCHAR(10) NOT NULL UNIQUE,
     type VARCHAR(20) 
-        CHECK (type IN ('regular', 'accommodation', 'motorcycle')),
+        CHECK (type IN ('car', 'accommodation', 'motorcycle')),
     FOREIGN KEY (id_building) REFERENCES Parking.Building(id_building)
 );
 
@@ -83,10 +84,13 @@ CREATE TABLE Parking.Vehicles (
 CREATE TABLE Parking.Occupancy (
     id_occupancy INT IDENTITY(1,1) PRIMARY KEY,
     id_spot INT NOT NULL,
-    id_vehicle INT NOT NULL,
+
+    license_plate VARCHAR(20) NOT NULL,
+    type VARCHAR(20) CHECK (type IN ('motorcycle', 'car')) NOT NULL,
+    accommodation BIT NOT NULL,
     timestamp DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (id_spot) REFERENCES Parking.Spots(id_spot),
-    FOREIGN KEY (id_vehicle) REFERENCES Parking.Vehicles(id_vehicle)
+
 );
 ```
 
@@ -142,17 +146,16 @@ INSERT INTO Parking.Vehicles (id_user, license_plate, brand, model, color, accom
     (6, 'BBB222', 'Yamaha', 'R15', 'Negro', 0, 'motorcycle');
 
 -- Logs
-INSERT INTO Auth.Logs (license_plate, action)
+INSERT INTO Auth.Logs (license_plate, action, description)
 VALUES 
-    ('CCC333', 'entry'),
-    ('CCC333', 'attempt');
+    ('CCC333', 'attempt', 'Example');
 
 -- Insert Parking Spots
 DECLARE @i INT = 1;
 WHILE @i <= 10
 BEGIN
     INSERT INTO Parking.Spots (id_building, code, type)
-    VALUES (1, CONCAT('A', @i), 'regular');
+    VALUES (1, CONCAT('A', @i), 'car');
     SET @i += 1;
 END
 
@@ -172,12 +175,35 @@ BEGIN
     SET @i += 1;
 END
 
+DECLARE @i INT = 1;
+WHILE @i <= 10
+BEGIN
+    INSERT INTO Parking.Spots (id_building, code, type)
+    VALUES (2, CONCAT('D', @i), 'car');
+    SET @i += 1;
+END
 
-INSERT INTO Parking.Occupancy (id_spot, id_vehicle)
-VALUES (1, 1);
+SET @i = 1;
+WHILE @i <= 3
+BEGIN
+    INSERT INTO Parking.Spots (id_building, code, type)
+    VALUES (2, CONCAT('E', @i), 'motorcycle');
+    SET @i += 1;
+END
 
-INSERT INTO Parking.Occupancy (id_spot, id_vehicle)
-VALUES (11, 2);
+SET @i = 1;
+WHILE @i <= 2
+BEGIN
+    INSERT INTO Parking.Spots (id_building, code, type)
+    VALUES (2, CONCAT('F', @i), 'accommodation');
+    SET @i += 1;
+END
+
+INSERT INTO Parking.Occupancy (id_spot, license_plate, type, accommodation)
+VALUES (1, 'AAA111', 'car', 0);
+
+INSERT INTO Parking.Occupancy (id_spot, license_plate, type, accommodation)
+VALUES (11, 'BBB111', 'motorcycle', 0);
 ```
 
 DROPS 
