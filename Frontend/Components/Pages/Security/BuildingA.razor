@@ -1,0 +1,309 @@
+﻿@page "/building-A"
+
+@layout Layout.Security.SecurityLayout
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject HttpClient Http
+
+<div class="main-container">
+    <div class="form-container">
+        <div class="information-container">
+            <h1>Ingreso de Vehículos</h1>
+        </div>
+
+        <div class="input-container">
+            <div class="checkbox-container">
+                <label>
+                    <input type="checkbox" @bind="IsUnregistered" />
+                    ¿Es visitante?
+                </label>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <input @bind="LicensePlate" placeholder="Ingrese la placa" />
+        </div>
+
+        <div class="input-container">
+            <select @bind="VehicleType" disabled="@(IsUnregistered == false)">
+                <option value="">-- Seleccione una opción --</option>
+                <option value="car">Auto</option>
+                <option value="motorcycle">Moto</option>
+            </select>
+            <div class="checkbox-container">
+                <label>
+                    <input type="checkbox" @bind="Accommodation" disabled="@(IsUnregistered == false)" />
+                    ¿Persona con discapacidad?
+                </label>
+            </div>
+        </div>
+
+        <button class="check-button" @onclick="CheckLicensePlate">Verificar la placa</button>
+    </div>
+    <div class="logo-container">
+        <img src="@TrafficLight" alt="Semáforo" />
+    </div>
+</div>
+
+<div class="message-container">
+    <p id="mensaje">@EstadoMensaje</p>
+</div>
+
+<hr style="border: 0.11rem solid #333; margin: 20px 0;" />
+
+<div class="occupancy-container">
+    <div class="occupancy-header">
+        <h2>Parqueo A - Ocupación</h2>
+        <div class="available-box">
+            <span>@AvailableSpotsText</span>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Tipo</th>
+                        <th>Discapacidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Occupancies != null && Occupancies.Any())
+                    {
+                        foreach (var o in Occupancies)
+                        {
+                            <tr data-id="@o.IdOccupancy">
+                                <td>@o.LicensePlate</td>
+                                <td>@o.Type</td>
+                                <td>@(o.Accommodation ? "Sí" : "No")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3">Sin registros disponibles.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="delete-box">
+            <div class="input-container">
+                <input @bind="LicensePlateToDelete" placeholder="Ingrese la placa" />
+            </div>
+            <button class="check-button" @onclick="DeleteOccupancy">Verificar la placa</button>
+        </div>
+    </div>
+</div>
+
+<br />
+<br />
+<br />
+<br />
+<br />
+
+@code {
+    private string LicensePlate = "";
+    private string LicensePlateToDelete = "";
+    private bool IsUnregistered = false;
+    private string VehicleType = "";
+    private bool Accommodation = false;
+
+    private string EstadoMensaje = "";
+    private string TrafficLight = "images/Yellow-light.png";
+    private string AvailableSpotsText = "";
+
+    private List<Occupancy> Occupancies = new();
+    private System.Threading.Timer? resetTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthService.HasRole("Security"))
+        {
+            Navigation.NavigateTo("/login", forceLoad: true);
+            return;
+        }
+
+        await RefreshOccupancies();
+    }
+
+    private async Task CheckLicensePlate()
+    {
+        EstadoMensaje = "";
+        TrafficLight = "images/Yellow-light.png";
+        resetTimer?.Dispose();
+
+        if (string.IsNullOrWhiteSpace(LicensePlate))
+        {
+            EstadoMensaje = "Ingrese una placa válida.";
+            TrafficLight = "images/Red-light.png";
+            ResetTimer();
+            return;
+        }
+
+        var placa = LicensePlate.Trim().ToUpper();
+        var edificio = "Edificio A";
+
+        try
+        {
+            HttpResponseMessage response;
+
+            if (!IsUnregistered)
+            {
+                var requestBody = new
+                {
+                    LicensePlate = placa,
+                    BuildingName = edificio
+                };
+
+                response = await Http.PostAsJsonAsync("https://localhost:7141/api/parking/entry/registered", requestBody);
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(VehicleType) || (VehicleType != "car" && VehicleType != "motorcycle"))
+                {
+                    EstadoMensaje = "Seleccione un tipo de vehículo válido.";
+                    TrafficLight = "images/Red-light.png";
+                    ResetTimer();
+                    return;
+                }
+
+                var requestBody = new
+                {
+                    LicensePlate = placa,
+                    BuildingName = edificio,
+                    Type = VehicleType,
+                    Accommodation = Accommodation
+                };
+
+                response = await Http.PostAsJsonAsync("https://localhost:7141/api/parking/entry/guest", requestBody);
+            }
+
+            await JsonResponse(response);
+            await RefreshOccupancies();
+        }
+        catch (Exception ex)
+        {
+            EstadoMensaje = $"Error de conexión: {ex.Message}";
+            TrafficLight = "images/Yellow-light.png";
+            ResetTimer();
+        }
+    }
+
+    private async Task DeleteOccupancy()
+    {
+        EstadoMensaje = "";
+        TrafficLight = "images/Yellow-light.png";
+        resetTimer?.Dispose();
+
+        var plate = LicensePlateToDelete.Trim().ToUpper();
+
+        if (string.IsNullOrWhiteSpace(plate))
+        {
+            EstadoMensaje = "Ingrese una placa válida para salida.";
+            TrafficLight = "images/Red-light.png";
+            ResetTimer();
+            return;
+        }
+
+        var requestBody = new
+        {
+            LicensePlate = plate,
+            BuildingName = "Edificio A"
+        };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://localhost:7141/api/parking/egress", requestBody);
+            await JsonResponse(response);
+            await RefreshOccupancies();
+        }
+        catch (Exception ex)
+        {
+            EstadoMensaje = $"Error de conexión: {ex.Message}";
+            TrafficLight = "images/Yellow-light.png";
+            ResetTimer();
+        }
+    }
+
+    private async Task JsonResponse(HttpResponseMessage response)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadFromJsonAsync<RespuestaDto>();
+            EstadoMensaje = json?.Message ?? "Acceso autorizado.";
+            TrafficLight = "images/Green-light.png";
+        }
+        else
+        {
+            var error = await response.Content.ReadFromJsonAsync<RespuestaDto>();
+            EstadoMensaje = error?.Message ?? $"Error: {response.StatusCode}";
+            TrafficLight = "images/Red-light.png";
+        }
+
+        ResetTimer();
+    }
+
+    private void ResetTimer()
+    {
+        resetTimer?.Dispose();
+        resetTimer = new System.Threading.Timer(_ =>
+        {
+            EstadoMensaje = "";
+            TrafficLight = "images/Yellow-light.png";
+            InvokeAsync(StateHasChanged);
+        }, null, 3000, System.Threading.Timeout.Infinite);
+    }
+
+    private async Task RefreshOccupancies()
+    {
+        try
+        {
+            var data = await Http.GetFromJsonAsync<List<Occupancy>>("https://localhost:7141/api/Occupancy");
+            if (data != null)
+            {
+                Occupancies = data;
+            }
+
+            var countResponse = await Http.GetFromJsonAsync<CountResponse>("https://localhost:7141/api/OccupancyCount/name?Name=Edificio A");
+            if (countResponse != null)
+            {
+                AvailableSpotsText = $"Disponibles: {countResponse.AvailableSpots}";
+            }
+            else
+            {
+                AvailableSpotsText = "Cupos no disponibles";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error al cargar datos: " + ex.Message);
+            AvailableSpotsText = "Error al obtener cupos";
+        }
+    }
+
+    private class RespuestaDto
+    {
+        public string Message { get; set; } = string.Empty;
+    }
+
+    private class Occupancy
+    {
+        public int IdOccupancy { get; set; }
+        public string LicensePlate { get; set; } = string.Empty;
+        public string BuildingName { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public bool Accommodation { get; set; }
+    }
+
+    private class CountResponse
+    {
+        public string BuildingName { get; set; } = string.Empty;
+        public int AvailableSpots { get; set; }
+    }
+}

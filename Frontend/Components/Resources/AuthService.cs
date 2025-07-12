@@ -2,12 +2,19 @@
 {
     public List<string> Roles { get; private set; } = new();
 
-    public bool IsLoggedIn => Roles.Count > 0;
+    public string Id { get; private set; }
+    public string Name { get; private set; }
 
-    public void SetRoles(List<string> roles)
+
+    public void SetUser(string id, string nombre, List<string> roles)
     {
+        Id = id;
+        Name = nombre;
         Roles = roles;
-        Console.WriteLine("Roles guardados en AuthService:");
+
+        Console.WriteLine($"\nUser: {Name} (id: {Id})");
+        Console.WriteLine($"Roles in AuthService for {Name}:");
+
         foreach (var role in Roles)
         {
             Console.WriteLine($"- {role}");
@@ -17,6 +24,8 @@
     public void Logout()
     {
         Roles.Clear();
+        Id = null;
+        Name = null;
     }
 
     public bool HasRole(string role) => Roles.Contains(role);

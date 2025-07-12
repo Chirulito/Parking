@@ -1,9 +1,13 @@
 using Frontend.Components;
 using Microsoft.AspNetCore.Components;
+using System.Reflection.PortableExecutable;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<BuildingService>();
+
+
 
 builder.Services.AddScoped(sp =>
 {
@@ -32,4 +36,3 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
-

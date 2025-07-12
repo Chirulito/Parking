@@ -11,5 +11,7 @@ public partial class Log
 
     public string Action { get; set; } = null!;
 
+    public string Description { get; set; }
+
     public DateTime? Timestamp { get; set; }
 }

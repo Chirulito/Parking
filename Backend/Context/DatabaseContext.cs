@@ -59,6 +59,10 @@ public partial class DatabaseContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("action");
+            entity.Property(e => e.Description)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("description");
             entity.Property(e => e.LicensePlate)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -77,21 +81,23 @@ public partial class DatabaseContext : DbContext
 
             entity.Property(e => e.IdOccupancy).HasColumnName("id_occupancy");
             entity.Property(e => e.IdSpot).HasColumnName("id_spot");
-            entity.Property(e => e.IdVehicle).HasColumnName("id_vehicle");
+            entity.Property(e => e.Accommodation).HasColumnName("accommodation");
             entity.Property(e => e.Timestamp)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("timestamp");
-
+            entity.Property(e => e.LicensePlate)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("license_plate");
+            entity.Property(e => e.Type)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("type");
             entity.HasOne(d => d.IdSpotNavigation).WithMany(p => p.Occupancies)
                 .HasForeignKey(d => d.IdSpot)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Occupancy__id_sp__7D439ABD");
-
-            entity.HasOne(d => d.IdVehicleNavigation).WithMany(p => p.Occupancies)
-                .HasForeignKey(d => d.IdVehicle)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Occupancy__id_ve__7E37BEF6");
         });
 
         modelBuilder.Entity<Role>(entity =>

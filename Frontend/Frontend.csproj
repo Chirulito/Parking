@@ -13,5 +13,7 @@
   <ItemGroup>
     <Folder Include="Components\Pages\Student\" />
     <Folder Include="Components\Pages\Staff\" />
+    <Folder Include="Components\Pages\Support\" />
   </ItemGroup>
 </Project>
+

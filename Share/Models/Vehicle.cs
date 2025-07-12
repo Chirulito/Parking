@@ -23,5 +23,4 @@ public partial class Vehicle
 
     public virtual User IdUserNavigation { get; set; } = null!;
 
-    public virtual ICollection<Occupancy> Occupancies { get; set; } = new List<Occupancy>();
 }

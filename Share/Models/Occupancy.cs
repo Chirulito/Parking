@@ -9,11 +9,14 @@ public partial class Occupancy
 
     public int IdSpot { get; set; }
 
-    public int IdVehicle { get; set; }
+    public string LicensePlate { get; set; } = null!;
+
+    public bool? Accommodation { get; set; }
+
+    public string? Type { get; set; }
 
     public DateTime? Timestamp { get; set; }
 
     public virtual Spot IdSpotNavigation { get; set; } = null!;
 
-    public virtual Vehicle IdVehicleNavigation { get; set; } = null!;
 }

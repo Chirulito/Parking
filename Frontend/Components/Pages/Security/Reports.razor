@@ -1,20 +1,13 @@
-﻿@page "/security"
+﻿@page "/Reports"
 
 @layout Layout.Security.SecurityLayout
 
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 
-<h1>Security Page</h1>
-<h1>Bienvenido, @AuthService.Name! </h1>
-
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-
-        await Task.Delay(10);
-
-        Console.WriteLine($"Roles: {string.Join(", ", AuthService.Roles)}");
         if (!AuthService.HasRole("Security"))
         {
             Navigation.NavigateTo("/login", forceLoad: true);

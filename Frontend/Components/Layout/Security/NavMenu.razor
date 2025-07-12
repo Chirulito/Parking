@@ -1,0 +1,50 @@
+﻿@inject BuildingService BuildingService
+@rendermode InteractiveServer
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Inicio</a>
+    </div>
+</div>
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item">
+            <NavLink class="nav-link" href="Building-A" @onclick="SelectBuildingA">
+                <span id="Edificio A" class="bi bi-parking-nav-menu" aria-hidden="true"></span> Parqueo A
+            </NavLink>
+        </div>
+
+        <div class="nav-item">
+            <NavLink class="nav-link" href="Building-B" @onclick="SelectBuildingB">
+                <span id="Edificio B" class="bi bi-parking-nav-menu" aria-hidden="true"></span> Parqueo B
+            </NavLink>
+        </div>
+
+        <div class="nav-item">
+            <NavLink class="nav-link" href="Building-C" @onclick="SelectBuildingC">
+                <span id="Edificio C" class="bi bi-parking-nav-menu" aria-hidden="true"></span> Parqueo C
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private void SelectBuildingA()
+    {
+        BuildingService.SelectBuilding("Edificio A");
+        // NavLink will handle the actual navigation to Building-A
+    }
+
+    private void SelectBuildingB()
+    {
+        BuildingService.SelectBuilding("Edificio B");
+        // NavLink will handle the actual navigation to Building-B
+    }
+
+    private void SelectBuildingC()
+    {
+        BuildingService.SelectBuilding("Edificio C");
+        // NavLink will handle the actual navigation to Building-C
+    }
+}

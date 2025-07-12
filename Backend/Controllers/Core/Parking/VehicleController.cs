@@ -104,5 +104,37 @@ namespace Backend.Controllers.Core.Parking
         {
             return _context.Vehicles.Any(e => e.IdVehicle == id);
         }
+
+        // POST: api/Vehicle/dto
+        [HttpPost("dto")]
+        public async Task<IActionResult> PostVehicleFromDto(VehicleDto dto)
+        {
+            var vehicle = new Vehicle
+            {
+                IdUser = dto.IdUser,
+                LicensePlate = dto.LicensePlate,
+                Brand = dto.Brand,
+                Model = dto.Model,
+                Color = dto.Color,
+                Accommodation = dto.Accommodation,
+                Type = dto.Type
+            };
+
+            _context.Vehicles.Add(vehicle);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Vehicle created successfully" });
+        }
+
+        public class VehicleDto
+        {
+            public int IdUser { get; set; }
+            public string LicensePlate { get; set; } = null!;
+            public string? Brand { get; set; }
+            public string? Model { get; set; }
+            public string? Color { get; set; }
+            public bool? Accommodation { get; set; }
+            public string? Type { get; set; }
+        }
     }
 }

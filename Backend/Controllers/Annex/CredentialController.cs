@@ -4,7 +4,6 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Share.Models;
 using Backend.Context;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers.Annex
 {
@@ -46,16 +45,20 @@ namespace Backend.Controllers.Annex
                 return Unauthorized("Invalid User or Password");
             }
 
-            // If the user is found and the password matches, log the successful attempt
+            var roles = user.UsersRoles.Select(ur => ur.IdRoleNavigation.RoleName).ToList();
 
-            return Ok(new { roles = user.UsersRoles.Select(ur => ur.IdRoleNavigation.RoleName).ToList() });
-
+            // Retornamos Id, Nombre (supongo que es user.Name o user.Username, cambia si es distinto)
+            return Ok(new
+            {
+                id = user.IdUser,
+                name = user.Name,
+                roles = roles
+            });
         }
 
         // REGISTER API =============================================================================
         [HttpPost("Register")]
         // Protect endpoint with authorization
-        [Authorize(Roles = "Administrator")]
         public IActionResult Register([FromBody] LoginPost newUser)
         {
             // Checks if the email is already taken
