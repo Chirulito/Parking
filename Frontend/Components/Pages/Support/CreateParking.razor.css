@@ -1,0 +1,46 @@
+﻿/* ULACIT HEADER */
+
+form {
+    font-family: var(--font);
+}
+
+.ulacit-header {
+    background-color: #3B0764;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+}
+
+    .ulacit-header .logo {
+        height: 32px;
+    }
+
+    .ulacit-header .search {
+        margin-left: 1rem;
+        flex: 1;
+        border-radius: 0.5rem;
+        border: 1px solid #ccc;
+        padding: 0.5rem;
+    }
+
+/* FORM STYLE */
+.input-ulacit {
+    border-radius: 0.5rem !important;
+    border: 1px solid #ccc !important;
+}
+
+/* PAGE TITLE */
+.page-title {
+    color: #3B0764;
+    margin: 1.5rem 0 1rem 0;
+}
+
+/* BUTTON ULACIT */
+.btn-ulacit {
+    background-color: #FF7900;
+    border-color: #FF7900;
+    color: #fff;
+    width: 100%;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+}

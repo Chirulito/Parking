@@ -1,0 +1,180 @@
+﻿@page "/create-user"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<h1 class="page-title">Registrar Nuevo Usuario</h1>
+
+<EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre Completo</label>
+            <InputText class="form-control input-ulacit" @bind-Value="newUser.Name" />
+            <ValidationMessage For="@(() => newUser.Name)" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Cédula / Identificación</label>
+            <InputText class="form-control input-ulacit" @bind-Value="newUser.Identification" />
+            <ValidationMessage For="@(() => newUser.Identification)" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Correo</label>
+            <InputText type="email" class="form-control input-ulacit" @bind-Value="newUser.Email" />
+            <ValidationMessage For="@(() => newUser.Email)" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Rol</label>
+            <InputSelect class="form-select input-ulacit" @bind-Value="newUser.RoleId">
+                <option value="">-- Seleccione un rol --</option>
+                @foreach (var r in roles)
+                {
+                    <option value="@r.IdRole">@r.RoleName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => newUser.RoleId)" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Fecha de Nacimiento</label>
+            <InputDate class="form-control input-ulacit" @bind-Value="newUser.Dob"
+                       min="1900-01-01" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            <ValidationMessage For="@(() => newUser.Dob)" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Contraseña (por defecto)</label>
+            <InputText type="text" class="form-control input-ulacit" @bind-Value="newUser.Password" disabled />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-ulacit">Crear Usuario</button>
+</EditForm>
+
+@code {
+    private List<RoleDto> roles = new();
+    private NewUserDto newUser = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        roles = await Http.GetFromJsonAsync<List<RoleDto>>("api/role") ?? new();
+        newUser.Password = "Ulacit123";
+        newUser.Dob = DateTime.Today;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (!roles.Any(r => r.IdRole == newUser.RoleId))
+        {
+            await JS.InvokeVoidAsync("alert", "El rol seleccionado no es válido.");
+            return;
+        }
+
+        var existingUsers = await Http.GetFromJsonAsync<List<UserDto>>("api/user") ?? new();
+        if (existingUsers.Any(u => u.Email.Equals(newUser.Email, StringComparison.OrdinalIgnoreCase)))
+        {
+            await JS.InvokeVoidAsync("alert", "El correo electrónico ya existe.");
+            return;
+        }
+
+        var userEntity = new UserEntity
+            {
+                Name = newUser.Name,
+                Identification = newUser.Identification,
+                Email = newUser.Email,
+                Dob = newUser.Dob,
+                Password = newUser.Password
+            };
+
+        var regResp = await Http.PostAsJsonAsync("api/user", userEntity);
+        if (!regResp.IsSuccessStatusCode)
+        {
+            var err = await regResp.Content.ReadAsStringAsync();
+            await JS.InvokeVoidAsync("alert", $"Error al crear usuario: {err}");
+            return;
+        }
+
+        // Obtener el usuario recién creado
+        existingUsers = await Http.GetFromJsonAsync<List<UserDto>>("api/user") ?? new();
+        var created = existingUsers.FirstOrDefault(u => u.Email.Equals(newUser.Email, StringComparison.OrdinalIgnoreCase));
+        if (created == null)
+        {
+            await JS.InvokeVoidAsync("alert", "No se encontró el usuario.");
+            return;
+        }
+
+        var userRoles = await Http.GetFromJsonAsync<List<UserRoleDto>>("api/UsersRole") ?? new();
+        if (userRoles.Any(ur => ur.IdUser == created.IdUser && ur.IdRole == newUser.RoleId))
+        {
+            await JS.InvokeVoidAsync("alert", "Este usuario ya tiene asignado ese rol.");
+            return;
+        }
+
+        var assignResp = await Http.PostAsJsonAsync("api/UsersRole", new UsersRoleEntity
+            {
+                IdUser = created.IdUser,
+                IdRole = newUser.RoleId
+            });
+
+        if (!assignResp.IsSuccessStatusCode)
+        {
+            var err = await assignResp.Content.ReadAsStringAsync();
+            await JS.InvokeVoidAsync("alert", $"Error al asignar rol: {err}");
+            return;
+        }
+
+        await JS.InvokeVoidAsync("alert", "Usuario creado con éxito. Se forzará cambio de contraseña en primer ingreso.");
+
+        newUser = new NewUserDto
+            {
+                Password = "Ulacit123",
+                Dob = DateTime.Today
+            };
+    }
+
+    // DTOs
+    public class RoleDto
+    {
+        public int IdRole { get; set; }
+        public string RoleName { get; set; } = string.Empty;
+    }
+
+    public class UserDto
+    {
+        public int IdUser { get; set; }
+        public string Email { get; set; } = string.Empty;
+    }
+
+    public class UserRoleDto
+    {
+        public int IdUserRole { get; set; }
+        public int IdUser { get; set; }
+        public int IdRole { get; set; }
+    }
+
+    public class NewUserDto
+    {
+        [Required] public string Name { get; set; } = string.Empty;
+        [Required] public string Identification { get; set; } = string.Empty;
+        [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+        [Required] public int RoleId { get; set; }
+        [Required] public DateTime Dob { get; set; }
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class UserEntity
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Identification { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public DateTime Dob { get; set; }
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class UsersRoleEntity
+    {
+        public int IdUser { get; set; }
+        public int IdRole { get; set; }
+    }
+}

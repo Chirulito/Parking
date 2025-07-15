@@ -9,11 +9,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Components\Pages\Student\" />
-    <Folder Include="Components\Pages\Staff\" />
-    <Folder Include="Components\Pages\Support\" />
-  </ItemGroup>
 </Project>
 

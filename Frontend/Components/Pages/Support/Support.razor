@@ -1,0 +1,23 @@
+﻿@page "/support"
+
+@layout Layout.Support.SupportLayout
+
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+
+<h1>Support Page</h1>
+<h1>Bienvenido, @AuthService.Name! </h1>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+
+        await Task.Delay(10);
+
+        Console.WriteLine($"Roles: {string.Join(", ", AuthService.Roles)}");
+        if (!AuthService.HasRole("System"))
+        {
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+}

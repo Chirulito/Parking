@@ -1,0 +1,75 @@
+﻿@page "/create-parkinglot"
+
+@using System.ComponentModel.DataAnnotations
+
+@layout Layout.Support.SupportLayout
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<h1 class="page-title">Registrar Parqueo</h1>
+
+<form onsubmit="return false;">
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre del Parqueo</label>
+            <input class="form-control input-ulacit" @bind="parking.Name" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Espacios Regulares</label>
+            <input type="number" min="0" class="form-control input-ulacit" @bind="parking.CapacityRegular" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Espacios Moto</label>
+            <input type="number" min="0" class="form-control input-ulacit" @bind="parking.CapacityMoto" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Espacios Ley 7600</label>
+            <input type="number" min="0" class="form-control input-ulacit" @bind="parking.CapacityLey7600" />
+        </div>
+    </div>
+
+    <button class="btn btn-ulacit" @onclick="HandleSubmit">Registrar Parqueo</button>
+</form>
+
+@code {
+    private ParkingLotDto parking = new();
+
+    private async Task HandleSubmit()
+    {
+        // Validación manual básica
+        if (string.IsNullOrWhiteSpace(parking.Name))
+        {
+            await JS.InvokeVoidAsync("alert", "El nombre del parqueo es obligatorio.");
+            return;
+        }
+
+        if (parking.CapacityRegular + parking.CapacityMoto + parking.CapacityLey7600 == 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Debe asignar al menos un espacio en cualquier categoría.");
+            return;
+        }
+
+        var resp = await Http.PostAsJsonAsync("https://localhost:7141/api/Building", parking);
+        if (!resp.IsSuccessStatusCode)
+        {
+            var err = await resp.Content.ReadAsStringAsync();
+            await JS.InvokeVoidAsync("alert", $"Error: {err}");
+            return;
+        }
+
+        await JS.InvokeVoidAsync("alert", "Parqueo creado con éxito.");
+        parking = new();
+        StateHasChanged();
+    }
+
+    private class ParkingLotDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public int CapacityRegular { get; set; }
+        public int CapacityMoto { get; set; }
+        public int CapacityLey7600 { get; set; }
+    }
+}
