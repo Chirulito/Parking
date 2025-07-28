@@ -61,7 +61,7 @@ CREATE TABLE Parking.Building (
 CREATE TABLE Parking.Spots (
     id_spot INT IDENTITY(1,1) PRIMARY KEY,
     id_building INT NOT NULL,
-    code VARCHAR(10) NOT NULL UNIQUE,
+    code VARCHAR(10) NOT NULL,
     type VARCHAR(20) 
         CHECK (type IN ('car', 'accommodation', 'motorcycle')),
     FOREIGN KEY (id_building) REFERENCES Parking.Building(id_building)
