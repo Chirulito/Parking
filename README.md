@@ -174,30 +174,31 @@ BEGIN
     VALUES (1, CONCAT('C', @i), 'accommodation');
     SET @i += 1;
 END
-
-DECLARE @i INT = 1;
-WHILE @i <= 10
+-----------------------
+DECLARE @j INT = 1;
+WHILE @j <= 10
 BEGIN
     INSERT INTO Parking.Spots (id_building, code, type)
-    VALUES (2, CONCAT('D', @i), 'car');
-    SET @i += 1;
+    VALUES (2, CONCAT('A', @j), 'car');
+    SET @j += 1;
 END
 
-SET @i = 1;
-WHILE @i <= 3
+SET @j = 1;
+WHILE @j <= 3
 BEGIN
     INSERT INTO Parking.Spots (id_building, code, type)
-    VALUES (2, CONCAT('E', @i), 'motorcycle');
-    SET @i += 1;
+    VALUES (2, CONCAT('B', @j), 'motorcycle');
+    SET @j += 1;
 END
 
-SET @i = 1;
-WHILE @i <= 2
+SET @j = 1;
+WHILE @j <= 2
 BEGIN
     INSERT INTO Parking.Spots (id_building, code, type)
-    VALUES (2, CONCAT('F', @i), 'accommodation');
-    SET @i += 1;
+    VALUES (2, CONCAT('C', @j), 'accommodation');
+    SET @j += 1;
 END
+-----------------------
 
 INSERT INTO Parking.Occupancy (id_spot, license_plate, type, accommodation)
 VALUES (1, 'AAA111', 'car', 0);
