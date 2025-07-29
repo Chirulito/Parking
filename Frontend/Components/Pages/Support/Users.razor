@@ -1,0 +1,475 @@
+﻿@page "/user-management"
+@using System.Text.Json
+@layout Layout.Support.SupportLayout
+@rendermode InteractiveServer
+@inject HttpClient Http
+
+<!-- ======= GET USUARIO ======= -->
+<div class="main-container">
+    <div class="form-container">
+        <div class="information-container">
+            <h1>Obtener Usuario</h1>
+        </div>
+
+        <div class="delete-box">
+            <div class="input-container">
+                <input @bind="Identification" placeholder="Ingrese la identificación" maxlength="9" />
+            </div>
+            <button class="login-button" @onclick="GetUser" disabled="@IsLoadingGet">
+                <span class="text">Buscar</span>
+                <span class="arrow">→</span>
+            </button>
+        </div>
+
+        <div class="input-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Fecha de Nacimiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (User != null)
+                    {
+                        <tr>
+                            <td>@User.Name</td>
+                            <td>@User.Email</td>
+                            <td>@User.Dob</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" style="text-align: center;">Sin datos disponibles</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="input-container">
+            <p style="color: red; min-height: 1.5rem;">@GetUserErrorMessage</p>
+        </div>
+    </div>
+</div>
+
+<hr style="border: 0.11rem solid #333; margin: 20px 0;" />
+
+<!-- ======= AGREGAR USUARIO ======= -->
+<div class="main-container">
+    <div class="form-container">
+        <div class="information-container">
+            <h1>Agregar Usuario</h1>
+        </div>
+
+        <div class="input-container">
+            <input @bind="NewUser.Identification" placeholder="Identificación" maxlength="9" />
+        </div>
+        <div class="input-container">
+            <input @bind="NewUser.Name" placeholder="Nombre" />
+        </div>
+        <div class="input-container">
+            <input @bind="NewUser.Email" placeholder="Email" type="email" />
+        </div>
+        <div class="input-container">
+            <input @bind="NewUser.Dob" placeholder="Fecha de Nacimiento (yyyy-MM-dd)" />
+        </div>
+        <div class="input-container">
+            <select @bind="NewUser.RoleName">
+                <option value="">-- Seleccione un rol --</option>
+                @foreach (var role in Roles)
+                {
+                    <option value="@role.RoleName">@role.RoleName</option>
+                }
+            </select>
+        </div>
+
+        <button class="login-button" @onclick="AddUser" disabled="@IsLoadingAdd">
+            <span class="text">Agregar Usuario</span>
+            <span class="arrow">→</span>
+        </button>
+
+        <div class="input-container" style="margin-top: 1rem;">
+            @if (Success)
+            {
+                <p style="color: green;">Usuario agregado correctamente.</p>
+            }
+            else if (!string.IsNullOrEmpty(AddUserErrorMessage))
+            {
+                <p style="color: red;">@AddUserErrorMessage</p>
+            }
+        </div>
+    </div>
+</div>
+
+<hr style="border: 0.11rem solid #333; margin: 20px 0;" />
+
+<!-- ======= ELIMINAR USUARIO ======= -->
+<div class="main-container">
+    <div class="form-container">
+        <div class="information-container">
+            <h1>Eliminar Usuario</h1>
+        </div>
+
+        <div class="delete-box">
+            <div class="input-container">
+                <input @bind="DeleteIdentification" placeholder="Ingrese la identificación" maxlength="9" />
+            </div>
+            <button class="login-button" @onclick="DeleteUser" disabled="@IsLoadingDelete">
+                <span class="text">Eliminar</span>
+                <span class="arrow">🗑</span>
+            </button>
+        </div>
+
+        <div class="input-container">
+            @if (!string.IsNullOrEmpty(DeleteMessage))
+            {
+                <p style="color: @(DeleteSuccess ? "green" : "red")">@DeleteMessage</p>
+            }
+        </div>
+    </div>
+</div>
+
+<hr style="border: 0.11rem solid #333; margin: 20px 0;" />
+
+<!-- ======= EDITAR USUARIO ======= -->
+<div class="main-container">
+    <div class="form-container">
+        <div class="information-container">
+            <h1>Editar Usuario</h1>
+        </div>
+
+        <div class="input-container">
+            <input @bind="EditIdentification" placeholder="Buscar por identificación" maxlength="9" />
+            <button class="login-button" @onclick="LoadUserForEdit" disabled="@IsLoadingEditLoad">
+                <span class="text">Cargar</span>
+                <span class="arrow">🔍</span>
+            </button>
+        </div>
+
+        @if (EditUserLoaded)
+        {
+            <div class="input-container">
+                <input @bind="EditUser.Name" placeholder="Nombre" />
+            </div>
+            <div class="input-container">
+                <input @bind="EditUser.Email" placeholder="Email" />
+            </div>
+            <div class="input-container">
+                <input @bind="EditUser.Dob" placeholder="Fecha de Nacimiento (yyyy-MM-dd)" />
+            </div>
+            <div class="input-container">
+                <label><input type="checkbox" @bind="EditUser.ChangePassword" /> Reestablecer contraseña</label>
+            </div>
+            <button class="login-button" @onclick="UpdateUser" disabled="@IsLoadingEditSave">
+                <span class="text">Actualizar</span>
+                <span class="arrow">💾</span>
+            </button>
+        }
+
+        <div class="input-container">
+            @if (!string.IsNullOrEmpty(EditMessage))
+            {
+                <p style="color: @(EditSuccess ? "green" : "red")">@EditMessage</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string Identification = "";
+    private string GetUserErrorMessage = "";
+    private string AddUserErrorMessage = "";
+    private UserDto? User;
+
+    private List<Role> Roles = new();
+    private NewUserDto NewUser = new();
+    private bool Success = false;
+
+    private bool IsLoadingGet = false;
+    private bool IsLoadingAdd = false;
+    private bool IsLoadingDelete = false;
+    private bool IsLoadingEditLoad = false;
+    private bool IsLoadingEditSave = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Roles = await Http.GetFromJsonAsync<List<Role>>("https://localhost:7141/api/Role");
+        }
+        catch
+        {
+            GetUserErrorMessage = "Error cargando roles.";
+        }
+    }
+
+    private async Task GetUser()
+    {
+        IsLoadingGet = true;
+        GetUserErrorMessage = "";
+        User = null;
+
+        if (string.IsNullOrWhiteSpace(Identification))
+        {
+            GetUserErrorMessage = "Ingrese una identificación válida.";
+            IsLoadingGet = false;
+            return;
+        }
+
+        try
+        {
+            User = await Http.GetFromJsonAsync<UserDto>($"https://localhost:7141/api/UserControllerByIdentification/by-identification/{Identification}");
+        }
+        catch (HttpRequestException ex)
+        {
+            GetUserErrorMessage = ex.StatusCode == System.Net.HttpStatusCode.NotFound ? "Usuario no encontrado." : "Error al obtener usuario.";
+        }
+        catch (Exception ex)
+        {
+            GetUserErrorMessage = $"Error inesperado: {ex.Message}";
+        }
+
+        IsLoadingGet = false;
+    }
+
+    private async Task AddUser()
+    {
+        IsLoadingAdd = true;
+        Success = false;
+        AddUserErrorMessage = "";
+
+        if (!DateTime.TryParseExact(NewUser.Dob, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out _))
+        {
+            AddUserErrorMessage = "Formato de fecha inválido. Use yyyy-MM-dd.";
+            IsLoadingAdd = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewUser.Identification) ||
+            string.IsNullOrWhiteSpace(NewUser.Name) ||
+            string.IsNullOrWhiteSpace(NewUser.Email) ||
+            string.IsNullOrWhiteSpace(NewUser.Dob) ||
+            string.IsNullOrWhiteSpace(NewUser.RoleName))
+        {
+            AddUserErrorMessage = "Todos los campos son obligatorios.";
+            IsLoadingAdd = false;
+            return;
+        }
+
+        try
+        {
+            var existing = await Http.GetAsync($"https://localhost:7141/api/UserControllerByIdentification/by-identification/{NewUser.Identification}");
+            if (existing.IsSuccessStatusCode)
+            {
+                AddUserErrorMessage = "Ya existe un usuario con esta identificación.";
+                IsLoadingAdd = false;
+                return;
+            }
+        }
+        catch { }
+
+        try
+        {
+            var existingByEmail = await Http.GetAsync($"https://localhost:7141/api/UserControllerByIdentification/by-email/{NewUser.Email}");
+            if (existingByEmail.IsSuccessStatusCode)
+            {
+                AddUserErrorMessage = "Ya existe un usuario con este correo.";
+                IsLoadingAdd = false;
+                return;
+            }
+        }
+        catch { }
+
+        var userCreateDto = new UserCreateDto
+        {
+            Identification = NewUser.Identification,
+            Name = NewUser.Name,
+            Email = NewUser.Email,
+            Dob = NewUser.Dob,
+            RoleName = NewUser.RoleName
+        };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://localhost:7141/api/UserControllerByIdentification", userCreateDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Success = true;
+                NewUser = new NewUserDto();
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                AddUserErrorMessage = string.IsNullOrWhiteSpace(msg) ? "Error al agregar usuario." : msg;
+            }
+        }
+        catch (Exception ex)
+        {
+            AddUserErrorMessage = $"Error inesperado: {ex.Message}";
+        }
+
+        IsLoadingAdd = false;
+    }
+
+    private string DeleteIdentification = "";
+    private string DeleteMessage = "";
+    private bool DeleteSuccess = false;
+
+    private async Task DeleteUser()
+    {
+        IsLoadingDelete = true;
+        DeleteMessage = "";
+        DeleteSuccess = false;
+
+        if (string.IsNullOrWhiteSpace(DeleteIdentification))
+        {
+            DeleteMessage = "Debe ingresar una identificación.";
+            IsLoadingDelete = false;
+            return;
+        }
+
+        try
+        {
+            var response = await Http.DeleteAsync($"https://localhost:7141/api/UserControllerByIdentification/by-identification/{DeleteIdentification}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                DeleteMessage = "Usuario eliminado correctamente.";
+                DeleteSuccess = true;
+                DeleteIdentification = "";
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                DeleteMessage = string.IsNullOrWhiteSpace(msg) ? "Error al eliminar." : msg;
+            }
+        }
+        catch (Exception ex)
+        {
+            DeleteMessage = $"Error inesperado: {ex.Message}";
+        }
+
+        IsLoadingDelete = false;
+    }
+
+    private string EditIdentification = "";
+    private bool EditUserLoaded = false;
+    private bool EditSuccess = false;
+    private string EditMessage = "";
+    private UserUpdateDto EditUser = new();
+
+    private async Task LoadUserForEdit()
+    {
+        IsLoadingEditLoad = true;
+        EditMessage = "";
+        EditUserLoaded = false;
+
+        if (string.IsNullOrWhiteSpace(EditIdentification))
+        {
+            EditMessage = "Debe ingresar una identificación.";
+            IsLoadingEditLoad = false;
+            return;
+        }
+
+        try
+        {
+            var user = await Http.GetFromJsonAsync<UserDto>($"https://localhost:7141/api/UserControllerByIdentification/by-identification/{EditIdentification}");
+
+            if (user is not null)
+            {
+                EditUser = new UserUpdateDto
+                {
+                    Name = user.Name,
+                    Email = user.Email,
+                    Dob = user.Dob,
+                    ChangePassword = false
+                };
+                EditUserLoaded = true;
+            }
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            EditMessage = "Usuario no encontrado.";
+        }
+        catch (Exception ex)
+        {
+            EditMessage = $"Error inesperado: {ex.Message}";
+        }
+
+        IsLoadingEditLoad = false;
+    }
+
+    private async Task UpdateUser()
+    {
+        IsLoadingEditSave = true;
+        EditMessage = "";
+        EditSuccess = false;
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"https://localhost:7141/api/UserControllerByIdentification/by-identification/{EditIdentification}", EditUser);
+
+            if (response.IsSuccessStatusCode)
+            {
+                EditMessage = "Usuario actualizado correctamente.";
+                EditSuccess = true;
+                EditUserLoaded = false;
+                EditIdentification = "";
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                EditMessage = string.IsNullOrWhiteSpace(msg) ? "Error al actualizar." : msg;
+            }
+        }
+        catch (Exception ex)
+        {
+            EditMessage = $"Error inesperado: {ex.Message}";
+        }
+
+        IsLoadingEditSave = false;
+    }
+
+    private class UserUpdateDto
+    {
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string? Dob { get; set; }
+        public bool ChangePassword { get; set; } = false;
+    }
+
+    private class UserDto
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Dob { get; set; } = "";
+    }
+
+    private class Role
+    {
+        public int IdRole { get; set; }
+        public string RoleName { get; set; } = "";
+    }
+
+    private class NewUserDto
+    {
+        public string Identification { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Dob { get; set; } = "";
+        public string RoleName { get; set; } = "";
+    }
+
+    private class UserCreateDto
+    {
+        public string Identification { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Dob { get; set; } = "";
+        public string RoleName { get; set; } = "";
+    }
+}

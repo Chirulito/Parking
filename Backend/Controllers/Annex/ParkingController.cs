@@ -148,8 +148,8 @@ namespace Backend.Controllers
             var spotTypes = accommodation
                 ? new[] { "accommodation" }
                 : type == "motorcycle"
-                    ? new[] { "motorcycle", "accommodation" }
-                    : new[] { "car", "accommodation" };
+                    ? new[] { "motorcycle" }
+                    : new[] { "car" };
 
             var spot = await _context.Spots
                 .Where(s => s.IdBuilding == buildingId &&

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Share.Models;
+﻿namespace Share.Models;
 
 public partial class UsersRole
 {

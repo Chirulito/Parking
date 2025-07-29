@@ -2,7 +2,6 @@
 using Share.DataTransferModels.Auth;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
-using Share.Models;
 using Backend.Context;
 
 namespace Backend.Controllers.Annex
@@ -39,7 +38,7 @@ namespace Backend.Controllers.Annex
             // Gets the IP address of the client making the request
             string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-            // If the user is null or the password does not match, log the failed attempt
+
             if (user == null || !VerifyPassword(login.Password, user.Salt, user.Password))
             {
                 return Unauthorized("Invalid User or Password");
@@ -47,39 +46,77 @@ namespace Backend.Controllers.Annex
 
             var roles = user.UsersRoles.Select(ur => ur.IdRoleNavigation.RoleName).ToList();
 
-            // Retornamos Id, Nombre (supongo que es user.Name o user.Username, cambia si es distinto)
+            bool mustChangePassword = VerifyPassword("Ulacit123", user.Salt, user.Password);
+
             return Ok(new
             {
                 id = user.IdUser,
                 name = user.Name,
-                roles = roles
+                roles = roles,
+                mustChangePassword = mustChangePassword
             });
         }
 
         // REGISTER API =============================================================================
         [HttpPost("Register")]
-        // Protect endpoint with authorization
-        public IActionResult Register([FromBody] LoginPost newUser)
+        public IActionResult Register([FromBody] RegisterPost newUser)
         {
-            // Checks if the email is already taken
-            if (_context.Users.Any(u => u.Email == newUser.Email))
-                return BadRequest("Username is already taken");
-
-            // Generates a salt and hashes the password
-            byte[] salt = GenerateSalt();
-            byte[] hashedPassword = HashPassword(newUser.Password, salt);
-
-            var user = new User
+            if (newUser == null ||
+                string.IsNullOrWhiteSpace(newUser.Email) ||
+                string.IsNullOrWhiteSpace(newUser.Name) ||
+                string.IsNullOrWhiteSpace(newUser.Identification) ||
+                string.IsNullOrWhiteSpace(newUser.Password) ||
+                string.IsNullOrWhiteSpace(newUser.Dob))
             {
-                // Username = newUser.Username,
+                return BadRequest("All fields are required.");
+            }
+
+            if (!DateOnly.TryParse(newUser.Dob, out DateOnly dob))
+            {
+                return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+            }
+
+            if (_context.Users.Any(u => u.Email == newUser.Email))
+                return BadRequest("Email is already taken.");
+
+            if (_context.Users.Any(u => u.Identification == newUser.Identification))
+                return BadRequest("Identification is already taken.");
+
+            var salt = GenerateSalt();
+            var hashedPassword = HashPassword(newUser.Password, salt);
+
+            var user = new Share.Models.User
+            {
+                Name = newUser.Name.Trim(),
+                Email = newUser.Email.Trim().ToLower(),
+                Identification = newUser.Identification.Trim(),
+                Dob = dob,
                 Password = hashedPassword,
                 Salt = salt
             };
 
-            // Adds the new user to the database
             _context.Users.Add(user);
             _context.SaveChanges();
-            return Ok("User was successfully created");
+
+            return Ok("User was successfully created.");
+        }
+
+        [HttpPut("ChangePassword")]
+        public IActionResult ChangePassword([FromBody] ChangePasswordDto model)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.IdUser == model.IdUser);
+            if (user == null)
+                return NotFound("User not found");
+
+            byte[] newSalt = GenerateSalt();
+            byte[] newHash = HashPassword(model.NewPassword, newSalt);
+
+            user.Salt = newSalt;
+            user.Password = newHash;
+
+            _context.SaveChanges();
+
+            return Ok("Password updated successfully");
         }
 
         // METHODS ==================================================================================
@@ -106,6 +143,12 @@ namespace Backend.Controllers.Annex
             rng.GetBytes(salt);
             return salt;
         }
+    }
+
+    public class ChangePasswordDto
+    {
+        public int IdUser { get; set; }
+        public string NewPassword { get; set; }
     }
 }
 
